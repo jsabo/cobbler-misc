@@ -47,7 +47,7 @@ diff -N -ru --exclude='*.o' --exclude='.*' --exclude='*.gz' --exclude='*.[sS]o*'
   */
 +static const char *http_dirs[] = {
 +	"",
-+	"/8.0-RELEASE" 
++	"/8.2-RELEASE" 
 +};
  
 -    int rv, s, af;
