@@ -149,7 +149,6 @@ if [ -n "${script}" ]; then
         fi
 fi
 
-# add script to pull in config cd here?
 # Environment may be an issue: the install environment has very few
 # tools
 
