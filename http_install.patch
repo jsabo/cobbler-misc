@@ -1,0 +1,885 @@
+diff -N -ru --exclude='*.o' --exclude='.*' --exclude='*.gz' --exclude='*.[sS]o*' --exclude='*.a' --exclude='*.la' --exclude='*.po' --exclude='*.out' --exclude='*.S' --exclude='*.cat' --exclude='*.lo' --exclude='*.mk' --exclude='*.scm' --exclude='*.tmp' --exclude='iso*' --exclude='koi*' --exclude='_stamp*' --exclude=stubs --exclude='*-patched' --exclude='dt_*' --exclude='y.tab.*' --exclude='*.[12345678]' --exclude='*.msg' --exclude='*.defns.h' --exclude=sh.err.h --exclude='tc.*.[ch]' --exclude=expr.c --exclude='arith*.[ch]' --exclude=sm_os.h --exclude='builtins.[ch]' --exclude=init.c --exclude='nodes.[ch]' --exclude='syntax.[ch]' --exclude='token.[ch]' --exclude='cs-*' --exclude='option*' --exclude=fortunes-o --exclude=tm.h --exclude='*default*' --exclude='*.map' --exclude='*config*' --exclude=lib --exclude=yacc -xbc -xbinutils -xcc -xcvs -xdoc -xdiff -xdiff3 -xgdb -xfont -xgroff -x'version.*' -xman -xsdiff -xgnu -xosreldate.h -x'*rpc*' -xvers.c -x'kerb*' -xlibexec -xversion -xrescue -xgbde -xipf -xrcorder -xroute -xshare -xcountries.h -xkeymap.h -xmakedevs.c src.orig/usr.sbin/sysinstall/Makefile src/usr.sbin/sysinstall/Makefile
+--- src.orig/usr.sbin/sysinstall/Makefile	2009-10-24 21:10:29.000000000 -0400
++++ src/usr.sbin/sysinstall/Makefile	2010-05-07 07:07:47.000000000 -0400
+@@ -10,7 +10,7 @@
+ 	disks.c dispatch.c dist.c dmenu.c doc.c dos.c floppy.c \
+ 	ftp.c globals.c http.c index.c install.c installUpgrade.c keymap.c \
+ 	label.c main.c makedevs.c media.c menus.c misc.c modules.c \
+-	mouse.c msg.c network.c nfs.c options.c package.c \
++	http_proxy.c mouse.c msg.c network.c nfs.c options.c package.c \
+ 	system.c tcpip.c termcap.c ttys.c ufs.c usb.c user.c \
+ 	variable.c ${_wizard} keymap.h countries.h
+ 
+diff -N -ru --exclude='*.o' --exclude='.*' --exclude='*.gz' --exclude='*.[sS]o*' --exclude='*.a' --exclude='*.la' --exclude='*.po' --exclude='*.out' --exclude='*.S' --exclude='*.cat' --exclude='*.lo' --exclude='*.mk' --exclude='*.scm' --exclude='*.tmp' --exclude='iso*' --exclude='koi*' --exclude='_stamp*' --exclude=stubs --exclude='*-patched' --exclude='dt_*' --exclude='y.tab.*' --exclude='*.[12345678]' --exclude='*.msg' --exclude='*.defns.h' --exclude=sh.err.h --exclude='tc.*.[ch]' --exclude=expr.c --exclude='arith*.[ch]' --exclude=sm_os.h --exclude='builtins.[ch]' --exclude=init.c --exclude='nodes.[ch]' --exclude='syntax.[ch]' --exclude='token.[ch]' --exclude='cs-*' --exclude='option*' --exclude=fortunes-o --exclude=tm.h --exclude='*default*' --exclude='*.map' --exclude='*config*' --exclude=lib --exclude=yacc -xbc -xbinutils -xcc -xcvs -xdoc -xdiff -xdiff3 -xgdb -xfont -xgroff -x'version.*' -xman -xsdiff -xgnu -xosreldate.h -x'*rpc*' -xvers.c -x'kerb*' -xlibexec -xversion -xrescue -xgbde -xipf -xrcorder -xroute -xshare -xcountries.h -xkeymap.h -xmakedevs.c src.orig/usr.sbin/sysinstall/dispatch.c src/usr.sbin/sysinstall/dispatch.c
+--- src.orig/usr.sbin/sysinstall/dispatch.c	2009-10-24 21:10:29.000000000 -0400
++++ src/usr.sbin/sysinstall/dispatch.c	2010-05-07 06:56:40.000000000 -0400
+@@ -102,6 +102,7 @@
+     { "mediaSetFTP",		mediaSetFTP		},
+     { "mediaSetFTPActive",	mediaSetFTPActive	},
+     { "mediaSetFTPPassive",	mediaSetFTPPassive	},
++    { "mediaSetHTTPProxy",	mediaSetHTTPProxy	},
+     { "mediaSetHTTP",		mediaSetHTTP		},
+     { "mediaSetUFS",		mediaSetUFS		},
+     { "mediaSetNFS",		mediaSetNFS		},
+diff -N -ru --exclude='*.o' --exclude='.*' --exclude='*.gz' --exclude='*.[sS]o*' --exclude='*.a' --exclude='*.la' --exclude='*.po' --exclude='*.out' --exclude='*.S' --exclude='*.cat' --exclude='*.lo' --exclude='*.mk' --exclude='*.scm' --exclude='*.tmp' --exclude='iso*' --exclude='koi*' --exclude='_stamp*' --exclude=stubs --exclude='*-patched' --exclude='dt_*' --exclude='y.tab.*' --exclude='*.[12345678]' --exclude='*.msg' --exclude='*.defns.h' --exclude=sh.err.h --exclude='tc.*.[ch]' --exclude=expr.c --exclude='arith*.[ch]' --exclude=sm_os.h --exclude='builtins.[ch]' --exclude=init.c --exclude='nodes.[ch]' --exclude='syntax.[ch]' --exclude='token.[ch]' --exclude='cs-*' --exclude='option*' --exclude=fortunes-o --exclude=tm.h --exclude='*default*' --exclude='*.map' --exclude='*config*' --exclude=lib --exclude=yacc -xbc -xbinutils -xcc -xcvs -xdoc -xdiff -xdiff3 -xgdb -xfont -xgroff -x'version.*' -xman -xsdiff -xgnu -xosreldate.h -x'*rpc*' -xvers.c -x'kerb*' -xlibexec -xversion -xrescue -xgbde -xipf -xrcorder -xroute -xshare -xcountries.h -xkeymap.h -xmakedevs.c src.orig/usr.sbin/sysinstall/http.c src/usr.sbin/sysinstall/http.c
+--- src.orig/usr.sbin/sysinstall/http.c	2009-10-24 21:10:29.000000000 -0400
++++ src/usr.sbin/sysinstall/http.c	2010-05-07 07:11:13.000000000 -0400
+@@ -34,21 +34,21 @@
+ #include <sys/param.h>
+ #include <netdb.h>
+ 
+-extern const char *ftp_dirs[]; /* defined in ftp.c */
++int HttpPort;
+ 
+-static Boolean
+-checkAccess(Boolean proxyCheckOnly)
+-{
+-/* 
+- * Some proxies fetch files with certain extensions in "ascii mode" instead
+- * of "binary mode" for FTP. The FTP server then translates all LF to CRLF.
+- *
+- * You can force Squid to use binary mode by appending ";type=i" to the URL,
+- * which is what I do here. For other proxies, the LF->CRLF substitution
+- * is reverted in distExtract().
++/* Search path.  Will be used for
++ * sprintf(req,"GET /%s%s/%s\r\n\r\n",base_url,search_path,file);
++ * so needs the leading slash.
+  */
++static const char *http_dirs[] = {
++	"",
++	"/8.0-RELEASE" 
++};
+ 
+-    int rv, s, af;
++static Boolean
++checkAccess(Boolean connectCheckOnly)
++{
++    int rv, s, af, i;
+     bool el, found=FALSE;		    /* end of header line */
+     char *cp, buf[PATH_MAX], req[BUFSIZ];
+     struct addrinfo hints, *res, *res0;
+@@ -76,23 +76,24 @@
+     }
+     freeaddrinfo(res0);
+     if (s == -1) {
+-	msgConfirm("Couldn't connect to proxy %s:%s",
++	msgConfirm("Couldn't connect to server http://%s:%s/",
+ 		    variable_get(VAR_HTTP_HOST),variable_get(VAR_HTTP_PORT));
+ 	variable_unset(VAR_HTTP_HOST);
+ 	return FALSE;
+     }
+-    if (proxyCheckOnly) {
++    if (connectCheckOnly) {
+        close(s);
+        return TRUE;
+     }
+ 
+     msgNotify("Checking access to\n %s", variable_get(VAR_HTTP_PATH));
+-    sprintf(req,"GET %s/ HTTP/1.0\r\n\r\n", variable_get(VAR_HTTP_PATH));
++
++    /* TODO: should check for base.something */
++    sprintf(req,"GET /%s/ HTTP/1.0\r\n\r\n", variable_get(VAR_HTTP_PATH));
+     write(s,req,strlen(req));
+ /*
+  *  scan the headers of the response
+  *  this is extremely quick'n dirty
+- *
+  */
+     bzero(buf, PATH_MAX);
+     cp=buf;
+@@ -100,30 +101,24 @@
+     rv=read(s,cp,1);
+     variable_set2(VAR_HTTP_FTP_MODE,"",0);
+     while (rv>0) {
+-	if ((*cp == '\012') && el) { 
++	if ((*cp == '\n') && el) { 
+ 	    /* reached end of a header line */
+ 	    if (!strncmp(buf,"HTTP",4)) {
++		/* Read status code */
+ 		if (strtol((char *)(buf+9),0,0) == 200) {
+ 		    found = TRUE;
+ 		}
+ 	    }
+ 
+-	    if (!strncmp(buf,"Server: ",8)) {
+-		if (!strncmp(buf,"Server: Squid",13)) {
+-		    variable_set2(VAR_HTTP_FTP_MODE,";type=i",0);
+-		} else {
+-		    variable_set2(VAR_HTTP_FTP_MODE,"",0);
+-		}
+-	    }
+ 	    /* ignore other headers */
+-	    /* check for "\015\012" at beginning of line, i.e. end of headers */
++	    /* check for "\m\n" at beginning of line, i.e. end of headers */
+ 	    if ((cp-buf) == 1)
+ 		break;
+ 	    cp=buf;
+ 	    rv=read(s,cp,1);
+ 	} else {
+ 	    el=FALSE;
+-	    if (*cp == '\015')
++	    if (*cp == '\r')
+ 		el=TRUE;
+ 	    cp++;
+ 	    rv=read(s,cp,1);
+@@ -141,37 +136,19 @@
+     int fdir;
+ 
+     /* 
+-     * First verify the proxy access
++     * First verify base access
+      */
+-    checkAccess(TRUE);
+-    while (variable_get(VAR_HTTP_HOST) == NULL) {
++    while (!checkAccess(TRUE) && variable_get(VAR_HTTP_HOST) == NULL) {
+         if (DITEM_STATUS(mediaSetHTTP(NULL)) == DITEM_FAILURE)
+             return FALSE;
+-        checkAccess(TRUE);
+     }
+ again:
+-    /* If the release is specified as "__RELEASE" or "any", then just
+-     * assume that the path the user gave is ok.
+-     */
+     rel = variable_get(VAR_RELNAME);
+     /*
+     msgConfirm("rel: -%s-", rel);
+     */
+ 
+-    if (strcmp(rel, "__RELEASE") && strcmp(rel, "any"))  {
+-        for (fdir = 0; ftp_dirs[fdir]; fdir++) {
+-            sprintf(req, "%s/%s/%s", variable_get(VAR_FTP_PATH),
+-                ftp_dirs[fdir], rel);
+-            variable_set2(VAR_HTTP_PATH, req, 0);
+-            if (checkAccess(FALSE)) {
+-                found = TRUE;
+-                break;
+-            }
+-        }
+-    } else {
+-        variable_set2(VAR_HTTP_PATH, variable_get(VAR_FTP_PATH), 0);
+-        found = checkAccess(FALSE);
+-    }
++    found = checkAccess(FALSE);
+     if (!found) {
+     	msgConfirm("No such directory: %s\n"
+ 		   "please check the URL and try again.", variable_get(VAR_HTTP_PATH));
+@@ -183,13 +160,55 @@
+     return found;
+ }
+ 
++FILE * mediaGetPath(char *path, int *server_code);
++
+ FILE *
+ mediaGetHTTP(Device *dev, char *file, Boolean probe)
+ {
++    char req[BUFSIZ];
+     FILE *fp;
+-    int rv, s, af;
+-    bool el;			/* end of header line */
+-    char *cp, buf[PATH_MAX], req[BUFSIZ];
++    int server_code, i;
++
++    for (i = 0; i < (sizeof(http_dirs)/sizeof(http_dirs[0])); ++i) {
++    	sprintf(req,"GET /%s%s/%s HTTP/1.0\r\n\r\n",
++	    variable_get(VAR_HTTP_PATH), http_dirs[i], file);
++
++	fp = mediaGetPath(req,&server_code);
++
++	if (fp != NULL) {
++	    return fp;
++	} if (server_code == 404) {
++	    continue; /* Try again a different path */
++	} else if (server_code >= 500) {
++	    msgConfirm("Server error %s when sending %s, "
++		    "you could try an other server", req);
++	    return NULL;
++	} else if (server_code >= 400) {
++	    msgConfirm("Client error %d, you could try an "
++		    "other server",server_code);
++	    return NULL;
++	} else if (server_code >= 300) {
++	    msgConfirm("Error %d,",server_code);
++	    return NULL;
++	} else if (server_code != 200) {
++	    msgConfirm("Error %d when sending %s, you could"
++		    " try an other server",server_code,req);
++	    return NULL;
++	}
++    }
++    if (probe)
++	return NULL;
++
++    msgConfirm("Server could not find file %s, try another server?",file);
++    return NULL;
++}
++
++FILE *
++mediaGetPath(char *req, int *server_code)
++{
++    int rv, s, af, i;
++    bool el; /* el => end of header line */
++    char *cp, buf[PATH_MAX];
+     struct addrinfo hints, *res, *res0;
+ 
+     af = variable_cmp(VAR_IPV6_ENABLE, "YES") ? AF_INET : AF_UNSPEC;
+@@ -214,66 +233,52 @@
+     }
+     freeaddrinfo(res0);
+     if (s == -1) {
+-	msgConfirm("Couldn't connect to proxy %s:%s",
++	msgConfirm("Couldn't connect to %s:%s",
+ 		    variable_get(VAR_HTTP_HOST),variable_get(VAR_HTTP_PORT));
+ 	return NULL;
+     }
+-						   
+-    sprintf(req,"GET %s/%s%s HTTP/1.0\r\n\r\n",
+-	    variable_get(VAR_HTTP_PATH), file, variable_get(VAR_HTTP_FTP_MODE));
+ 
+     if (isDebug()) {
+ 	msgDebug("sending http request: %s\n",req);
+     }
+     write(s,req,strlen(req));
+ 
+-/*
+- *  scan the headers of the response
+- *  this is extremely quick'n dirty
+- *
+- */
++    /*
++     *  scan the headers of the response
++     *  this is extremely quick'n dirty
++     *
++     */
+     cp=buf;
+     el=FALSE;
+     rv=read(s,cp,1);
+     while (rv>0) {
+-	if ((*cp == '\012') && el) {
+-  	    /* reached end of a header line */
+-  	    if (!strncmp(buf,"HTTP",4)) {
+-		rv=strtol((char *)(buf+9),0,0);
++	if ((*cp == '\n') && el) {
++	    /* reached end of a header line */
++	    if (!strncmp(buf,"HTTP",sizeof("HTTP")-1)) {
++		(*server_code) = strtol((char *)(buf+9),0,0);
+ 		*(cp-1)='\0';		/* chop the CRLF off */
+-		if (probe && (rv != 200)) {
+-		    return NULL;
+-		} else if (rv >= 500) {
+-		    msgConfirm("Server error %s when sending %s, you could try an other server",buf, req);
+-		    return NULL;
+-		} else if (rv == 404) {
+-		    msgConfirm("%s was not found, maybe directory or release-version are wrong?",req);
+-		    return NULL;
+-		} else if (rv >= 400) {
+-		    msgConfirm("Client error %s, you could try an other server",buf);
+-		    return NULL;
+-		} else if (rv >= 300) {
+-		    msgConfirm("Error %s,",buf);
+-		    return NULL;
+-		} else if (rv != 200) {
+-		    msgConfirm("Error %s when sending %s, you could try an other server",buf, req);
++		if ((*server_code) != 200) {
++		    close(s);
+ 		    return NULL;
+ 		}
+ 	    }
+ 	    /* ignore other headers */
+-	    /* check for "\015\012" at beginning of line, i.e. end of headers */
++	    /* check for "\r\n" at beginning of line, i.e. end of headers */
+ 	    if ((cp-buf) == 1) 
+ 		break;
+ 	    cp=buf;
+ 	    rv=read(s,cp,1);
+ 	} else {
+ 	    el=FALSE;
+-	    if (*cp == '\015')
++	    if (*cp == '\r')
+ 		el=TRUE;
+ 	    cp++;
+ 	    rv=read(s,cp,1);
+ 	}
+     }
+-    fp=fdopen(s,"r");
+-    return fp;
++    if ((cp - buf) >= sizeof(buf)) {
++	close(s);
++	return NULL;
++    }
++    return fdopen(s,"r");
+ }
+diff -N -ru --exclude='*.o' --exclude='.*' --exclude='*.gz' --exclude='*.[sS]o*' --exclude='*.a' --exclude='*.la' --exclude='*.po' --exclude='*.out' --exclude='*.S' --exclude='*.cat' --exclude='*.lo' --exclude='*.mk' --exclude='*.scm' --exclude='*.tmp' --exclude='iso*' --exclude='koi*' --exclude='_stamp*' --exclude=stubs --exclude='*-patched' --exclude='dt_*' --exclude='y.tab.*' --exclude='*.[12345678]' --exclude='*.msg' --exclude='*.defns.h' --exclude=sh.err.h --exclude='tc.*.[ch]' --exclude=expr.c --exclude='arith*.[ch]' --exclude=sm_os.h --exclude='builtins.[ch]' --exclude=init.c --exclude='nodes.[ch]' --exclude='syntax.[ch]' --exclude='token.[ch]' --exclude='cs-*' --exclude='option*' --exclude=fortunes-o --exclude=tm.h --exclude='*default*' --exclude='*.map' --exclude='*config*' --exclude=lib --exclude=yacc -xbc -xbinutils -xcc -xcvs -xdoc -xdiff -xdiff3 -xgdb -xfont -xgroff -x'version.*' -xman -xsdiff -xgnu -xosreldate.h -x'*rpc*' -xvers.c -x'kerb*' -xlibexec -xversion -xrescue -xgbde -xipf -xrcorder -xroute -xshare -xcountries.h -xkeymap.h -xmakedevs.c src.orig/usr.sbin/sysinstall/http_proxy.c src/usr.sbin/sysinstall/http_proxy.c
+--- src.orig/usr.sbin/sysinstall/http_proxy.c	1969-12-31 19:00:00.000000000 -0500
++++ src/usr.sbin/sysinstall/http_proxy.c	2010-05-07 07:10:54.000000000 -0400
+@@ -0,0 +1,279 @@
++/*
++ * Copyright (c) 1999
++ *	Philipp Mergenthaler <philipp.mergenthaler@stud.uni-karlsruhe.de>
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, LIFE OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ *
++ * $FreeBSD: src/usr.sbin/sysinstall/http.c,v 1.8.10.1.2.1 2009/10/25 01:10:29 kensmith Exp $
++ */
++
++#include "sysinstall.h"
++#include <sys/socket.h>
++#include <netinet/in.h>
++#include <arpa/inet.h>
++#include <sys/param.h>
++#include <netdb.h>
++
++extern const char *ftp_dirs[]; /* defined in ftp.c */
++
++static Boolean
++checkAccess(Boolean proxyCheckOnly)
++{
++/* 
++ * Some proxies fetch files with certain extensions in "ascii mode" instead
++ * of "binary mode" for FTP. The FTP server then translates all LF to CRLF.
++ *
++ * You can force Squid to use binary mode by appending ";type=i" to the URL,
++ * which is what I do here. For other proxies, the LF->CRLF substitution
++ * is reverted in distExtract().
++ */
++
++    int rv, s, af;
++    bool el, found=FALSE;		    /* end of header line */
++    char *cp, buf[PATH_MAX], req[BUFSIZ];
++    struct addrinfo hints, *res, *res0;
++
++    af = variable_cmp(VAR_IPV6_ENABLE, "YES") ? AF_INET : AF_UNSPEC;
++    memset(&hints, 0, sizeof(hints));
++    hints.ai_family = af;
++    hints.ai_socktype = SOCK_STREAM;
++    hints.ai_protocol = 0;
++    if ((rv = getaddrinfo(variable_get(VAR_HTTP_HOST),
++			  variable_get(VAR_HTTP_PORT), &hints, &res0)) != 0) {
++	msgConfirm("%s", gai_strerror(rv));
++	variable_unset(VAR_HTTP_HOST);
++	return FALSE;
++    }
++    s = -1;
++    for (res = res0; res; res = res->ai_next) {
++	if ((s = socket(res->ai_family, res->ai_socktype,
++			res->ai_protocol)) < 0)
++	    continue;
++	if (connect(s, res->ai_addr, res->ai_addrlen) >= 0)
++	    break;
++	close(s);
++	s = -1;
++    }
++    freeaddrinfo(res0);
++    if (s == -1) {
++	msgConfirm("Couldn't connect to proxy %s:%s",
++		    variable_get(VAR_HTTP_HOST),variable_get(VAR_HTTP_PORT));
++	variable_unset(VAR_HTTP_HOST);
++	return FALSE;
++    }
++    if (proxyCheckOnly) {
++       close(s);
++       return TRUE;
++    }
++
++    msgNotify("Checking access to\n %s", variable_get(VAR_HTTP_PATH));
++    sprintf(req,"GET %s/ HTTP/1.0\r\n\r\n", variable_get(VAR_HTTP_PATH));
++    write(s,req,strlen(req));
++/*
++ *  scan the headers of the response
++ *  this is extremely quick'n dirty
++ *
++ */
++    bzero(buf, PATH_MAX);
++    cp=buf;
++    el=FALSE;
++    rv=read(s,cp,1);
++    variable_set2(VAR_HTTP_FTP_MODE,"",0);
++    while (rv>0) {
++	if ((*cp == '\012') && el) { 
++	    /* reached end of a header line */
++	    if (!strncmp(buf,"HTTP",4)) {
++		if (strtol((char *)(buf+9),0,0) == 200) {
++		    found = TRUE;
++		}
++	    }
++
++	    if (!strncmp(buf,"Server: ",8)) {
++		if (!strncmp(buf,"Server: Squid",13)) {
++		    variable_set2(VAR_HTTP_FTP_MODE,";type=i",0);
++		} else {
++		    variable_set2(VAR_HTTP_FTP_MODE,"",0);
++		}
++	    }
++	    /* ignore other headers */
++	    /* check for "\015\012" at beginning of line, i.e. end of headers */
++	    if ((cp-buf) == 1)
++		break;
++	    cp=buf;
++	    rv=read(s,cp,1);
++	} else {
++	    el=FALSE;
++	    if (*cp == '\015')
++		el=TRUE;
++	    cp++;
++	    rv=read(s,cp,1);
++	}
++    }
++    close(s);
++    return found;
++} 
++
++Boolean
++mediaInitHTTPProxy(Device *dev)
++{
++    bool found=FALSE;		    /* end of header line */
++    char *rel, req[BUFSIZ];
++    int fdir;
++
++    /* 
++     * First verify the proxy access
++     */
++    checkAccess(TRUE);
++    while (variable_get(VAR_HTTP_HOST) == NULL) {
++        if (DITEM_STATUS(mediaSetHTTP(NULL)) == DITEM_FAILURE)
++            return FALSE;
++        checkAccess(TRUE);
++    }
++again:
++    /* If the release is specified as "__RELEASE" or "any", then just
++     * assume that the path the user gave is ok.
++     */
++    rel = variable_get(VAR_RELNAME);
++    /*
++    msgConfirm("rel: -%s-", rel);
++    */
++
++    if (strcmp(rel, "__RELEASE") && strcmp(rel, "any"))  {
++        for (fdir = 0; ftp_dirs[fdir]; fdir++) {
++            sprintf(req, "%s/%s/%s", variable_get(VAR_FTP_PATH),
++                ftp_dirs[fdir], rel);
++            variable_set2(VAR_HTTP_PATH, req, 0);
++            if (checkAccess(FALSE)) {
++                found = TRUE;
++                break;
++            }
++        }
++    } else {
++        variable_set2(VAR_HTTP_PATH, variable_get(VAR_FTP_PATH), 0);
++        found = checkAccess(FALSE);
++    }
++    if (!found) {
++    	msgConfirm("No such directory: %s\n"
++		   "please check the URL and try again.", variable_get(VAR_HTTP_PATH));
++        variable_unset(VAR_HTTP_PATH);
++        dialog_clear_norefresh();
++        clear();
++        if (DITEM_STATUS(mediaSetHTTP(NULL)) != DITEM_FAILURE) goto again;
++    }
++    return found;
++}
++
++FILE *
++mediaGetHTTPProxy(Device *dev, char *file, Boolean probe)
++{
++    FILE *fp;
++    int rv, s, af;
++    bool el;			/* end of header line */
++    char *cp, buf[PATH_MAX], req[BUFSIZ];
++    struct addrinfo hints, *res, *res0;
++
++    af = variable_cmp(VAR_IPV6_ENABLE, "YES") ? AF_INET : AF_UNSPEC;
++    memset(&hints, 0, sizeof(hints));
++    hints.ai_family = af;
++    hints.ai_socktype = SOCK_STREAM;
++    hints.ai_protocol = 0;
++    if ((rv = getaddrinfo(variable_get(VAR_HTTP_HOST),
++			  variable_get(VAR_HTTP_PORT), &hints, &res0)) != 0) {
++	msgConfirm("%s", gai_strerror(rv));
++	return NULL;
++    }
++    s = -1;
++    for (res = res0; res; res = res->ai_next) {
++	if ((s = socket(res->ai_family, res->ai_socktype,
++			res->ai_protocol)) < 0)
++	    continue;
++	if (connect(s, res->ai_addr, res->ai_addrlen) >= 0)
++	    break;
++	close(s);
++	s = -1;
++    }
++    freeaddrinfo(res0);
++    if (s == -1) {
++	msgConfirm("Couldn't connect to proxy %s:%s",
++		    variable_get(VAR_HTTP_HOST),variable_get(VAR_HTTP_PORT));
++	return NULL;
++    }
++						   
++    sprintf(req,"GET %s/%s%s HTTP/1.0\r\n\r\n",
++	    variable_get(VAR_HTTP_PATH), file, variable_get(VAR_HTTP_FTP_MODE));
++
++    if (isDebug()) {
++	msgDebug("sending http request: %s\n",req);
++    }
++    write(s,req,strlen(req));
++
++/*
++ *  scan the headers of the response
++ *  this is extremely quick'n dirty
++ *
++ */
++    cp=buf;
++    el=FALSE;
++    rv=read(s,cp,1);
++    while (rv>0) {
++	if ((*cp == '\012') && el) {
++  	    /* reached end of a header line */
++  	    if (!strncmp(buf,"HTTP",4)) {
++		rv=strtol((char *)(buf+9),0,0);
++		*(cp-1)='\0';		/* chop the CRLF off */
++		if (probe && (rv != 200)) {
++		    return NULL;
++		} else if (rv >= 500) {
++		    msgConfirm("Server error %s when sending %s, you could try an other server",buf, req);
++		    return NULL;
++		} else if (rv == 404) {
++		    msgConfirm("%s was not found, maybe directory or release-version are wrong?",req);
++		    return NULL;
++		} else if (rv >= 400) {
++		    msgConfirm("Client error %s, you could try an other server",buf);
++		    return NULL;
++		} else if (rv >= 300) {
++		    msgConfirm("Error %s,",buf);
++		    return NULL;
++		} else if (rv != 200) {
++		    msgConfirm("Error %s when sending %s, you could try an other server",buf, req);
++		    return NULL;
++		}
++	    }
++	    /* ignore other headers */
++	    /* check for "\015\012" at beginning of line, i.e. end of headers */
++	    if ((cp-buf) == 1) 
++		break;
++	    cp=buf;
++	    rv=read(s,cp,1);
++	} else {
++	    el=FALSE;
++	    if (*cp == '\015')
++		el=TRUE;
++	    cp++;
++	    rv=read(s,cp,1);
++	}
++    }
++    fp=fdopen(s,"r");
++    return fp;
++}
+diff -N -ru --exclude='*.o' --exclude='.*' --exclude='*.gz' --exclude='*.[sS]o*' --exclude='*.a' --exclude='*.la' --exclude='*.po' --exclude='*.out' --exclude='*.S' --exclude='*.cat' --exclude='*.lo' --exclude='*.mk' --exclude='*.scm' --exclude='*.tmp' --exclude='iso*' --exclude='koi*' --exclude='_stamp*' --exclude=stubs --exclude='*-patched' --exclude='dt_*' --exclude='y.tab.*' --exclude='*.[12345678]' --exclude='*.msg' --exclude='*.defns.h' --exclude=sh.err.h --exclude='tc.*.[ch]' --exclude=expr.c --exclude='arith*.[ch]' --exclude=sm_os.h --exclude='builtins.[ch]' --exclude=init.c --exclude='nodes.[ch]' --exclude='syntax.[ch]' --exclude='token.[ch]' --exclude='cs-*' --exclude='option*' --exclude=fortunes-o --exclude=tm.h --exclude='*default*' --exclude='*.map' --exclude='*config*' --exclude=lib --exclude=yacc -xbc -xbinutils -xcc -xcvs -xdoc -xdiff -xdiff3 -xgdb -xfont -xgroff -x'version.*' -xman -xsdiff -xgnu -xosreldate.h -x'*rpc*' -xvers.c -x'kerb*' -xlibexec -xversion -xrescue -xgbde -xipf -xrcorder -xroute -xshare -xcountries.h -xkeymap.h -xmakedevs.c src.orig/usr.sbin/sysinstall/install.c src/usr.sbin/sysinstall/install.c
+--- src.orig/usr.sbin/sysinstall/install.c	2009-10-24 21:10:29.000000000 -0400
++++ src/usr.sbin/sysinstall/install.c	2010-04-30 12:24:47.000000000 -0400
+@@ -906,8 +906,11 @@
+ 	/* BOGON #5: aliases database not built for bin */
+ 	vsystem("newaliases");
+ 
++#if 0
+ 	/* BOGON #6: Remove /stand (finally) */
+ 	vsystem("rm -rf /stand");
++	/* Moving to after postinstall script can run */
++#endif
+ 
+ 	/* Now run all the mtree stuff to fix things up */
+         vsystem("mtree -deU -f /etc/mtree/BSD.root.dist -p /");
+diff -N -ru --exclude='*.o' --exclude='.*' --exclude='*.gz' --exclude='*.[sS]o*' --exclude='*.a' --exclude='*.la' --exclude='*.po' --exclude='*.out' --exclude='*.S' --exclude='*.cat' --exclude='*.lo' --exclude='*.mk' --exclude='*.scm' --exclude='*.tmp' --exclude='iso*' --exclude='koi*' --exclude='_stamp*' --exclude=stubs --exclude='*-patched' --exclude='dt_*' --exclude='y.tab.*' --exclude='*.[12345678]' --exclude='*.msg' --exclude='*.defns.h' --exclude=sh.err.h --exclude='tc.*.[ch]' --exclude=expr.c --exclude='arith*.[ch]' --exclude=sm_os.h --exclude='builtins.[ch]' --exclude=init.c --exclude='nodes.[ch]' --exclude='syntax.[ch]' --exclude='token.[ch]' --exclude='cs-*' --exclude='option*' --exclude=fortunes-o --exclude=tm.h --exclude='*default*' --exclude='*.map' --exclude='*config*' --exclude=lib --exclude=yacc -xbc -xbinutils -xcc -xcvs -xdoc -xdiff -xdiff3 -xgdb -xfont -xgroff -x'version.*' -xman -xsdiff -xgnu -xosreldate.h -x'*rpc*' -xvers.c -x'kerb*' -xlibexec -xversion -xrescue -xgbde -xipf -xrcorder -xroute -xshare -xcountries.h -xkeymap.h -xmakedevs.c src.orig/usr.sbin/sysinstall/media.c src/usr.sbin/sysinstall/media.c
+--- src.orig/usr.sbin/sysinstall/media.c	2009-10-24 21:10:29.000000000 -0400
++++ src/usr.sbin/sysinstall/media.c	2010-05-07 07:12:15.000000000 -0400
+@@ -52,6 +52,7 @@
+ 
+ static Boolean got_intr = FALSE;
+ static Boolean ftp_skip_resolve = FALSE;
++static Boolean http_skip_resolve = FALSE;
+ 
+ /* timeout handler */
+ static void
+@@ -458,7 +459,7 @@
+     return mediaSetFTP(self);
+ }
+ 
+-int mediaSetHTTP(dialogMenuItem *self)
++int mediaSetHTTPProxy(dialogMenuItem *self)
+ {
+     Boolean tmp;
+     int result;
+@@ -504,13 +505,147 @@
+     }
+ 
+     /* mediaDevice has been set by mediaSetFTP(), overwrite partly: */
+-    mediaDevice->type = DEVICE_TYPE_HTTP;
+-    mediaDevice->init = mediaInitHTTP;
+-    mediaDevice->get = mediaGetHTTP;
++    mediaDevice->type = DEVICE_TYPE_HTTP_PROXY;
++    mediaDevice->init = mediaInitHTTPProxy;
++    mediaDevice->get = mediaGetHTTPProxy;
+     mediaDevice->shutdown = dummyShutdown;
+     return DITEM_SUCCESS | DITEM_LEAVE_MENU | what;
+ }
+    
++/*
++ * Return 0 if we successfully found and set the installation type to
++ * be an ftp server
++ */
++int
++mediaSetHTTP(dialogMenuItem *self)
++{
++    static Device httpDevice;
++    char *cp, hbuf[MAXHOSTNAMELEN], *hostname, *dir;
++    struct addrinfo hints, *res;
++    int af;
++    size_t urllen;
++    extern int HttpPort;
++    static Device *networkDev = NULL;
++
++    mediaClose();
++    cp = variable_get(VAR_HTTP_PATH);
++    /* If we've been through here before ... */
++    if (networkDev && cp && msgYesNo("Re-use old HTTP site selection values?"))
++	cp = NULL;
++
++    if (!cp) {
++	if (!dmenuOpenSimple(&MenuMediaHTTP, FALSE))
++	    return DITEM_FAILURE;
++	else
++	    cp = variable_get(VAR_HTTP_PATH);
++    }
++    if (!cp)
++	return DITEM_FAILURE;
++    else if (!strcmp(cp, "other")) {
++	variable_set2(VAR_HTTP_PATH, "http://", 0);
++	cp = variable_get_value(VAR_HTTP_PATH, "Please specify the URL of a FreeBSD distribution on a\n"
++				"remote http site.\n"
++				"A URL looks like this:  http://<hostname>/<path>",0);
++	if (!cp || !*cp || !strcmp(cp, "http://")) {
++	    variable_unset(VAR_HTTP_PATH);
++	    return DITEM_FAILURE;
++	}
++	urllen = strlen(cp);
++	if (urllen >= sizeof(httpDevice.name)) {
++	    msgConfirm("Length of specified URL is %d characters. Allowable maximum is %d.",
++			urllen,sizeof(httpDevice.name)-1);
++	    variable_unset(VAR_HTTP_PATH);
++	    return DITEM_FAILURE;
++	}
++    }
++    if (strncmp("http://", cp, sizeof("http://")-1)) {
++	msgConfirm("Sorry, %s is an invalid URL!", cp);
++	variable_unset(VAR_HTTP_PATH);
++	return DITEM_FAILURE;
++    }
++    SAFE_STRCPY(httpDevice.name, cp);
++    SAFE_STRCPY(hbuf, cp + strlen("http://"));
++    hostname = hbuf;
++
++    if (!networkDev || msgYesNo("You've already done the network configuration once,\n"
++				"would you like to skip over it now?") != 0) {
++	if (networkDev)
++	    DEVICE_SHUTDOWN(networkDev);
++	if (!(networkDev = tcpDeviceSelect())) {
++	    variable_unset(VAR_HTTP_PATH);
++	    return DITEM_FAILURE;
++	}
++    }
++    if (!DEVICE_INIT(networkDev)) {
++	if (isDebug())
++	    msgDebug("mediaSetFTP: Net device init failed.\n");
++	variable_unset(VAR_HTTP_PATH);
++	return DITEM_FAILURE;
++    }
++    if (*hostname == '[' && (cp = index(hostname + 1, ']')) != NULL &&
++	(*++cp == '\0' || *cp == '/' || *cp == ':')) {
++	++hostname;
++	*(cp - 1) = '\0';
++    }
++    else
++	cp = index(hostname, ':');
++    if (cp != NULL && *cp == ':') {
++	*(cp++) = '\0';
++	HttpPort = strtol(cp, 0, 0);
++    }
++    else
++	HttpPort = 80;
++
++    if ((dir = index(cp ? cp : hostname, '/')) != NULL)
++	*(dir++) = '\0';
++    if (isDebug()) {
++	msgDebug("hostname = `%s'\n", hostname);
++	msgDebug("dir = `%s'\n", dir ? dir : "/");
++	msgDebug("port # = `%d'\n", HttpPort);
++    }
++    if (!http_skip_resolve && variable_get(VAR_NAMESERVER)) {
++	msgNotify("Looking up host %s.", hostname);
++    	if (isDebug())
++	    msgDebug("Starting DNS.\n");
++	kickstart_dns();
++    	if (isDebug())
++	    msgDebug("Looking up hostname, %s, using getaddrinfo(AI_NUMERICHOST).\n", hostname);
++	af = variable_cmp(VAR_IPV6_ENABLE, "YES") ? AF_INET : AF_UNSPEC;
++	memset(&hints, 0, sizeof(hints));
++	hints.ai_family = af;
++	hints.ai_socktype = SOCK_STREAM;
++	hints.ai_flags = AI_PASSIVE | AI_NUMERICHOST;
++	if (getaddrinfo(hostname, NULL, &hints, &res) != 0) {
++	    if (isDebug())
++		msgDebug("Looking up hostname, %s, using getaddrinfo().\n",
++			 hostname);
++	    hints.ai_flags = AI_PASSIVE;
++	    if (getaddrinfo(hostname, NULL, &hints, &res) != 0) {
++		msgConfirm("Cannot resolve hostname `%s'!  Are you sure that"
++			" your\nname server, gateway and network interface are"
++			" correctly configured?", hostname);
++		if (networkDev)
++		    DEVICE_SHUTDOWN(networkDev);
++		networkDev = NULL;
++		variable_unset(VAR_FTP_PATH);
++		return DITEM_FAILURE;
++	    }
++	}
++	freeaddrinfo(res);
++	if (isDebug())
++	    msgDebug("Found DNS entry for %s successfully..\n", hostname);
++    }
++    variable_set2(VAR_HTTP_HOST, hostname, 0);
++    variable_set2(VAR_HTTP_PATH, dir ? dir : "/", 0);
++    variable_set2(VAR_HTTP_PORT, itoa(HttpPort), 0);
++    httpDevice.type = DEVICE_TYPE_HTTP;
++    httpDevice.init = mediaInitHTTP;
++    httpDevice.get = mediaGetHTTP;
++    httpDevice.shutdown = dummyShutdown;
++    httpDevice.private = networkDev;
++    mediaDevice = &httpDevice;
++    return DITEM_SUCCESS | DITEM_LEAVE_MENU | DITEM_RESTORE;
++}
+ 
+ int
+ mediaSetUFS(dialogMenuItem *self)
+diff -N -ru --exclude='*.o' --exclude='.*' --exclude='*.gz' --exclude='*.[sS]o*' --exclude='*.a' --exclude='*.la' --exclude='*.po' --exclude='*.out' --exclude='*.S' --exclude='*.cat' --exclude='*.lo' --exclude='*.mk' --exclude='*.scm' --exclude='*.tmp' --exclude='iso*' --exclude='koi*' --exclude='_stamp*' --exclude=stubs --exclude='*-patched' --exclude='dt_*' --exclude='y.tab.*' --exclude='*.[12345678]' --exclude='*.msg' --exclude='*.defns.h' --exclude=sh.err.h --exclude='tc.*.[ch]' --exclude=expr.c --exclude='arith*.[ch]' --exclude=sm_os.h --exclude='builtins.[ch]' --exclude=init.c --exclude='nodes.[ch]' --exclude='syntax.[ch]' --exclude='token.[ch]' --exclude='cs-*' --exclude='option*' --exclude=fortunes-o --exclude=tm.h --exclude='*default*' --exclude='*.map' --exclude='*config*' --exclude=lib --exclude=yacc -xbc -xbinutils -xcc -xcvs -xdoc -xdiff -xdiff3 -xgdb -xfont -xgroff -x'version.*' -xman -xsdiff -xgnu -xosreldate.h -x'*rpc*' -xvers.c -x'kerb*' -xlibexec -xversion -xrescue -xgbde -xipf -xrcorder -xroute -xshare -xcountries.h -xkeymap.h -xmakedevs.c src.orig/usr.sbin/sysinstall/menus.c src/usr.sbin/sysinstall/menus.c
+--- src.orig/usr.sbin/sysinstall/menus.c	2009-10-24 21:10:29.000000000 -0400
++++ src/usr.sbin/sysinstall/menus.c	2010-05-07 07:13:10.000000000 -0400
+@@ -213,7 +213,8 @@
+       { " Media, UFS",		"Select UFS installation media.",	NULL, mediaSetUFS },
+       { " Media, FTP",		"Select FTP installation media.",	NULL, mediaSetFTP },
+       { " Media, FTP Passive",	"Select passive FTP installation media.", NULL, mediaSetFTPPassive },
+-      { " Media, HTTP",		"Select FTP via HTTP proxy installation media.", NULL, mediaSetHTTP },
++      { " Media, HTTP",		"Select HTTP installation media.",      NULL, mediaSetHTTP },
++      { " Media, HTTP Proxy",	"Select FTP via HTTP proxy installation media.", NULL, mediaSetHTTPProxy },
+       { " Network Interfaces",	"Configure network interfaces",		NULL, tcpMenuSelect },
+       { " Networking Services",	"The network services menu.",		NULL, dmenuSubmenu, NULL, &MenuNetworking },
+       { " NFS, client",		"Set NFS client flag.",			dmenuVarCheck, dmenuToggleVariable, NULL, "nfs_client_enable=YES" },
+@@ -879,6 +880,22 @@
+       { NULL } }
+ };
+ 
++DMenu MenuMediaHTTP = {
++    DMENU_NORMAL_TYPE | DMENU_SELECTION_RETURNS,
++    "Please select a FreeBSD HTTP distribution site",
++    "Please select the site closest to you or \"other\" if you'd like to\n"
++    "specify a different choice.  Also note that not every site listed here\n"
++    "carries more than the base distribution kits. Only Primary sites are\n"
++    "guaranteed to carry the full range of possible distributions.",
++    "Select a site that's close!",
++    NULL,
++    { { "URL", "Specify some other ftp site by URL", NULL, dmenuSetVariable, NULL,
++	VAR_HTTP_PATH "=other" },
++
++      { NULL } }
++};
++
++
+ DMenu MenuNetworkDevice = {
+     DMENU_NORMAL_TYPE | DMENU_SELECTION_RETURNS,
+     "Network interface information required",
+@@ -929,11 +946,11 @@
+     { { "1 CD/DVD",		"Install from a FreeBSD CD/DVD",	NULL, mediaSetCDROM },
+       { "2 FTP",		"Install from an FTP server",		NULL, mediaSetFTPActive },
+       { "3 FTP Passive",	"Install from an FTP server through a firewall", NULL, mediaSetFTPPassive },
+-      { "4 HTTP",		"Install from an FTP server through a http proxy", NULL, mediaSetHTTP },
+-      { "5 DOS",		"Install from a DOS partition",		NULL, mediaSetDOS },
+-      { "6 NFS",		"Install over NFS",			NULL, mediaSetNFS },
+-      { "7 File System",	"Install from an existing filesystem",	NULL, mediaSetUFS },
+-      { "8 Floppy",		"Install from a floppy disk set",	NULL, mediaSetFloppy },
++      { "4 FTP via HTTP",	"Install from an FTP server through a http proxy", NULL, mediaSetHTTPProxy },
++      { "5 HTTP",		"Install from an HTTP server",		NULL, mediaSetHTTP },
++      { "6 DOS",		"Install from a DOS partition",		NULL, mediaSetDOS },
++      { "7 NFS",		"Install over NFS",			NULL, mediaSetNFS },
++      { "8 File System",	"Install from an existing filesystem",	NULL, mediaSetUFS },
+       { "9 USB",		"Install from a USB drive",		NULL, mediaSetUSB },
+       { "X Options",		"Go to the Options screen",		NULL, optionsEditor },
+       { NULL } },
+diff -N -ru --exclude='*.o' --exclude='.*' --exclude='*.gz' --exclude='*.[sS]o*' --exclude='*.a' --exclude='*.la' --exclude='*.po' --exclude='*.out' --exclude='*.S' --exclude='*.cat' --exclude='*.lo' --exclude='*.mk' --exclude='*.scm' --exclude='*.tmp' --exclude='iso*' --exclude='koi*' --exclude='_stamp*' --exclude=stubs --exclude='*-patched' --exclude='dt_*' --exclude='y.tab.*' --exclude='*.[12345678]' --exclude='*.msg' --exclude='*.defns.h' --exclude=sh.err.h --exclude='tc.*.[ch]' --exclude=expr.c --exclude='arith*.[ch]' --exclude=sm_os.h --exclude='builtins.[ch]' --exclude=init.c --exclude='nodes.[ch]' --exclude='syntax.[ch]' --exclude='token.[ch]' --exclude='cs-*' --exclude='option*' --exclude=fortunes-o --exclude=tm.h --exclude='*default*' --exclude='*.map' --exclude='*config*' --exclude=lib --exclude=yacc -xbc -xbinutils -xcc -xcvs -xdoc -xdiff -xdiff3 -xgdb -xfont -xgroff -x'version.*' -xman -xsdiff -xgnu -xosreldate.h -x'*rpc*' -xvers.c -x'kerb*' -xlibexec -xversion -xrescue -xgbde -xipf -xrcorder -xroute -xshare -xcountries.h -xkeymap.h -xmakedevs.c src.orig/usr.sbin/sysinstall/sysinstall.h src/usr.sbin/sysinstall/sysinstall.h
+--- src.orig/usr.sbin/sysinstall/sysinstall.h	2009-10-24 21:10:29.000000000 -0400
++++ src/usr.sbin/sysinstall/sysinstall.h	2010-05-07 07:11:41.000000000 -0400
+@@ -277,6 +277,7 @@
+     DEVICE_TYPE_UFS,
+     DEVICE_TYPE_NFS,
+     DEVICE_TYPE_ANY,
++    DEVICE_TYPE_HTTP_PROXY,
+     DEVICE_TYPE_HTTP,
+ } DeviceType;
+ 
+@@ -448,6 +449,7 @@
+ extern DMenu		MenuMediaDOS;		/* DOS media menu				*/
+ extern DMenu		MenuMediaFloppy;	/* Floppy media menu				*/
+ extern DMenu		MenuMediaFTP;		/* FTP media menu				*/
++extern DMenu		MenuMediaHTTP;		/* HTTP media menu				*/
+ extern DMenu		MenuNetworkDevice;	/* Network device menu				*/
+ extern DMenu		MenuNTP;		/* NTP time server menu				*/
+ extern DMenu		MenuSecurity;		/* System security options menu			*/
+@@ -654,6 +656,10 @@
+ extern FILE	*mediaGetFTP(Device *dev, char *file, Boolean probe);
+ extern void	mediaShutdownFTP(Device *dev);
+ 
++/* http_proxy.c */
++extern Boolean	mediaInitHTTPProxy(Device *dev);
++extern FILE	*mediaGetHTTPProxy(Device *dev, char *file, Boolean probe);
++
+ /* http.c */
+ extern Boolean	mediaInitHTTP(Device *dev);
+ extern FILE	*mediaGetHTTP(Device *dev, char *file, Boolean probe);
+@@ -730,6 +736,7 @@
+ extern int	mediaSetFTP(dialogMenuItem *self);
+ extern int	mediaSetFTPActive(dialogMenuItem *self);
+ extern int	mediaSetFTPPassive(dialogMenuItem *self);
++extern int	mediaSetHTTPProxy(dialogMenuItem *self);
+ extern int	mediaSetHTTP(dialogMenuItem *self);
+ extern int	mediaSetUFS(dialogMenuItem *self);
+ extern int	mediaSetNFS(dialogMenuItem *self);
+diff -N -ru --exclude='*.o' --exclude='.*' --exclude='*.gz' --exclude='*.[sS]o*' --exclude='*.a' --exclude='*.la' --exclude='*.po' --exclude='*.out' --exclude='*.S' --exclude='*.cat' --exclude='*.lo' --exclude='*.mk' --exclude='*.scm' --exclude='*.tmp' --exclude='iso*' --exclude='koi*' --exclude='_stamp*' --exclude=stubs --exclude='*-patched' --exclude='dt_*' --exclude='y.tab.*' --exclude='*.[12345678]' --exclude='*.msg' --exclude='*.defns.h' --exclude=sh.err.h --exclude='tc.*.[ch]' --exclude=expr.c --exclude='arith*.[ch]' --exclude=sm_os.h --exclude='builtins.[ch]' --exclude=init.c --exclude='nodes.[ch]' --exclude='syntax.[ch]' --exclude='token.[ch]' --exclude='cs-*' --exclude='option*' --exclude=fortunes-o --exclude=tm.h --exclude='*default*' --exclude='*.map' --exclude='*config*' --exclude=lib --exclude=yacc -xbc -xbinutils -xcc -xcvs -xdoc -xdiff -xdiff3 -xgdb -xfont -xgroff -x'version.*' -xman -xsdiff -xgnu -xosreldate.h -x'*rpc*' -xvers.c -x'kerb*' -xlibexec -xversion -xrescue -xgbde -xipf -xrcorder -xroute -xshare -xcountries.h -xkeymap.h -xmakedevs.c src.orig/usr.sbin/sysinstall/system.c src/usr.sbin/sysinstall/system.c
+--- src.orig/usr.sbin/sysinstall/system.c	2009-10-24 21:10:29.000000000 -0400
++++ src/usr.sbin/sysinstall/system.c	2010-04-30 12:25:37.000000000 -0400
+@@ -258,6 +258,11 @@
+     /* If we have a temporary doc dir lying around, nuke it */
+     (void)vsystem("rm -rf %s", DOC_TMP_DIR);
+ 
++    /* blow away /stand.  Finall */
++    if (RunningAsInit)
++       vsystem("rm -rf /stand");
++
++
+     /* REALLY exit! */
+     if (RunningAsInit) {
+ 	/* Put the console back */

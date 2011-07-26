@@ -1,0 +1,168 @@
+% /stand/cobbler.cfg.tmpl
+# The script that fetches this file uses the "% <filename> lines to split the
+# file.
+#
+# It assumes the answer file will contain a "cobbler.cfg.tmpl" file, does some
+# substitution for variables it's best placed to know, and then loadConfigs it.
+# So the cobbler.cfg.tmpl section is required.  The other sections are used by
+# cobber.cfg.
+#
+
+# Turn on extra debugging.
+debug=YES
+# Turn off all prompting.
+nonInteractive=YES
+noWarn=YES
+
+################################
+# Figure out our installation media and configure it.
+# The all CAPS variables are replaced by the script that fetches this with
+# information from DHCP.
+netDev=IFACE
+defaultrouter=ROUTE
+ipaddr=IP
+netmask=NM
+hostname=$system_name
+_httpPath=http://$server/cobbler/ks_mirror/$distro
+mediaSetHTTP
+
+# Handle pre-install tasks (talk to cobbler?)
+command=/bin/sh /stand/preinstall.sh
+system
+
+# Select which distributions we want.
+dists=base kernels GENERIC SMP doc catpages
+distSetCustom
+
+# Figure out the disk configuration
+command=/bin/sh /stand/dodisk.sh
+system
+configFile=/stand/disk.cfg
+loadConfig
+
+# OK, everything is set.  Do it!
+installCommit
+
+package=perl
+packageAdd
+package=lsof
+packageAdd
+package=bash
+packageAdd
+package=python
+packageAdd
+package=ruby
+packageAdd
+package=sudo
+packageAdd
+package=cdrtools
+packageAdd
+package=dvd+rw-tools
+packageAdd
+package=p5-XML-LibXML
+packageAdd
+
+# Handle post-install tasks (scripts, fix kernel, etc.)
+command=/bin/sh /stand/postinstall.sh
+system
+
+# If you generate your own rc.conf in your post install script,
+# uncomment this
+keeprcconf=1
+
+shutdown
+
+% /stand/dodisk.sh
+#!/bin/sh
+########### Disk Partitioning script
+ Fetch variables
+disk=`kenv -q install.disk`
+swap=`kenv -q install.swap`
+
+# Use the first disk device if one is not specified.  Unfortunately at least
+# ata disks are not listed in sorted order in kern.disks, so we cannot just
+# use the first disk in the list.  Instead, we walk the list using a string
+# comparison to find the first disk.
+if [ -z "\${disk}" ]; then
+        for d in `sysctl -n kern.disks`; do
+                if [ -z "\${disk}" -o "\${disk}" '>' "\$d" ]; then
+                        disk=\$d
+                fi
+        done
+fi
+
+# Default swap to 8G
+if [ -z "\${swap}" ]; then
+        swap="8G"
+fi
+
+# Compute swap size in 512-byte blocks
+case $swap in
+        *[gG])
+                # Gigabytes
+                swap=\$((\${swap%[gG]} * 2 * 1024 * 1024))
+                ;;
+        *[mM])
+                # Megabytes
+                swap=\$((\${swap%[mM]} * 2 * 1024))
+                ;;
+        *[kK])
+                # Kilobytes
+                swap=\$((\${swap%[kK]} * 2))
+esac
+
+# Generate the config for the disk
+cat > /stand/disk.cfg <<EOF
+disk=\${disk}
+partition=all
+bootManager=standard
+diskPartitionEditor
+
+# 1 GB root
+\${disk}s1-1=ufs 2097152 /
+
+# swap
+\${disk}s1-2=swap ${swap} none
+
+# 1 GB var
+\${disk}s1-3=ufs 2097152 /var 1
+
+# rest to usr
+\${disk}s1-4=ufs 0 /usr 1
+
+diskLabelEditor
+EOF
+
+% /stand/preinstall.sh
+#!/bin/sh
+########### Preinstall Script
+fetch -o /dev/null http://$server/cblr/svc/op/trig/mode/pre/system/$system_name
+
+% /stand/postinstall.sh
+#!/bin/sh
+############ Postinstall script
+# If we have a script and it is available, run it.
+script=`kenv -q install.script`
+if [ -n "${script}" ]; then
+        if [ -r "${script}" ]; then
+                /bin/sh ${script}
+        fi
+fi
+
+# add script to pull in config cd here?
+# Environment may be an issue: the install environment has very few
+# tools
+
+# Enable sshd
+/bin/sh -c 'echo sshd_enable=\"YES\" > /etc/rc.conf'
+
+# Set root passwd
+/bin/sh -c 'echo alikeapple |pw mod user root -h 0'
+
+# trigger post scripts
+fetch -o /root/cobbler.ks http://$server/cblr/svc/op/ks/system/$system_name
+fetch -o /dev/null http://$server/cblr/svc/op/trig/mode/post/system/$system_name
+fetch -o /dev/null http://$server/cblr/svc/op/nopxe/system/$system_name
+
+# Give me time to look around
+#sleep 3600
